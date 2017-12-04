@@ -1,0 +1,7 @@
+/target/
+/.settings/
+logs/
+.idea/
+/.tern-project
+/.myeclipse/
+/.classpath/
