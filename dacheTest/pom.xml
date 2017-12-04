@@ -1,0 +1,232 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+		xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>dacheTest</groupId>
+  <artifactId>dacheTest</artifactId>
+  <version>0.0.1-RELEASE</version>
+  <packaging>jar</packaging>
+
+
+	<!-- Spring Boot -->
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>1.3.1.RELEASE</version>
+	</parent>
+	
+	
+	<profiles>
+		<!-- 开发环境 -->
+		<profile>
+			<id>dev</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<properties>
+				<profileActive>dev</profileActive>
+			</properties>
+		</profile>
+
+		<!-- 测试环境 -->
+		<profile>
+			<id>test</id>
+			<properties>
+				<profileActive>test</profileActive>
+			</properties>
+		</profile>
+
+		<!-- 性能测试环境 -->
+		<profile>
+			<id>performance</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<properties>
+				<profileActive>performance</profileActive>
+			</properties>
+		</profile>
+
+		<!-- 准生产环境 -->
+		<profile>
+			<id>uat</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<properties>
+				<profileActive>uat</profileActive>
+			</properties>
+		</profile>
+
+		<!--生产环境,请勿在任何开发，测试，及UAT环境中使用 -->
+		<profile>
+			<id>prod</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<properties>
+				<profileActive>prod</profileActive>
+				<dbunit.schema>st_dacheTest</dbunit.schema>
+			</properties>
+		</profile>
+	</profiles>
+  
+  	<properties>
+		<spring.version>4.2.3.RELEASE</spring.version>
+		<spring.data.jpa.version>1.9.1.RELEASE</spring.data.jpa.version>
+		<spring.boot.version>1.3.1.RELEASE</spring.boot.version>
+
+		<slf4j.version>1.7.7</slf4j.version>
+		<logback.verion>1.1.3</logback.verion>
+		<springfox.version>2.2.2</springfox.version>
+	</properties>
+	
+	<dependencies>
+		<!--spring -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-devtools</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-thymeleaf</artifactId>
+		</dependency>
+		<!-- spring security依赖 -->
+		<dependency>
+	        <groupId>org.springframework.boot</groupId>
+	        <artifactId>spring-boot-starter-security</artifactId>
+	    </dependency>
+	    
+	    <dependency>
+		    <groupId>org.springframework</groupId>
+		    <artifactId>spring-test</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>net.sf.jxls</groupId>
+			<artifactId>jxls-core</artifactId>
+			<version>1.0.5</version>
+		</dependency>
+		
+		<!-- lombak日志 -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>1.16.6</version>
+		</dependency>
+		
+		<!-- redis -->
+		<dependency>
+	      <groupId>org.springframework.boot</groupId>
+	      <artifactId>spring-boot-starter-redis</artifactId>
+    	</dependency>
+    	
+    	<!-- 导入postgre数据库链接jar包 -->
+		<dependency>
+			<groupId>postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>9.1-901-1.jdbc4</version>
+		</dependency>
+		
+	</dependencies>
+	
+	
+	<build>
+
+		<defaultGoal>package</defaultGoal>
+		<finalName>${project.artifactId}-${project.version}</finalName>
+		<resources>
+		
+			<resource>
+	                <directory>${basedir}/src/main/webapp</directory>
+                    <!--注意此次必须要放在此目录下才能被访问到-->
+	                <targetPath>META-INF/resources</targetPath> 
+	                <includes>
+	                    <include>**/**</include>
+	                </includes>
+	        </resource>
+		
+			<!-- 打包时过滤掉其它环境配置文件 -->
+			<resource>
+				<directory>src/main/resources</directory>
+				<excludes>
+					<exclude>application-dev.properties</exclude>
+					<exclude>application-prod.properties</exclude>
+					<exclude>application-test.properties</exclude>
+				</excludes>
+			</resource>
+
+			<!-- 打包时过滤掉单元测试代码 -->
+			<resource>
+				<directory>src/test</directory>
+				<excludes>
+					<exclude>*</exclude>
+				</excludes>
+			</resource>
+
+			<!-- 打包时过滤掉.bat文件 -->
+			<resource>
+				<directory>bin</directory>
+				<excludes>
+					<exclude>*.bat</exclude>
+					<exclude>使用说明.txt</exclude>
+				</excludes>
+			</resource>
+
+			<!-- 设置对application.properties进行过虑，文件中的${key}会被替换掉为真正的值 -->
+			<resource>
+				<filtering>true</filtering>
+				<directory>src/main/resources</directory>
+				<includes>
+					<include>application-${profileActive}.properties</include>
+					<include>application.properties</include>
+				</includes>
+			</resource>
+
+			<resource>
+				<directory>src/main/resources</directory>
+				<includes>
+					<include>*.xml</include>
+				</includes>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
+
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+					<encoding>UTF-8</encoding>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+		</plugins>
+	</build>
+  
+</project>
